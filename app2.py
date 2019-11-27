@@ -1,9 +1,10 @@
+
 import numpy as np
 import sqlalchemy
 import pandas as pd
 from sqlalchemy.ext.automap import automap_base
 from sqlalchemy.orm import Session
-from sqlalchemy import create_engine, func, inspect
+from sqlalchemy import create_engine, func
 from collections import OrderedDict
 from flask import Flask, jsonify, Response
 
@@ -17,7 +18,8 @@ Base = automap_base()
 # reflect the tables
 Base.prepare(engine, reflect=True)
 
-session = Session(engine)
+Measurement = Base.classes.measurement
+Station = Base.classes.station
 
 #################################################
 # Flask Setup
@@ -39,7 +41,6 @@ def Homepage():
         f"/api.v1.0/<start> and /api/v1.0/<start>/<end>"
     )
 
-
 @app.route("/api/v1.0/precipitation")
 def precipitation():
     percep_last_12 = engine.execute(
@@ -56,6 +57,7 @@ def precipitation():
     
 @app.route("/api/v1.0/stations")
 def stations():
+
     sta = engine.execute('SELECT station FROM Station').fetchall()
     return jsonify(str(sta))
 
@@ -68,8 +70,9 @@ def tobs():
      "2016-08-23" AND "2017-08-23"\
      ;').fetchall()
 
-    return jsonify(str(tobs_12))
+    return jsonify(dict(tobs_12))
 
 
 if __name__ == '__main__':
     app.run(debug=True)
+
