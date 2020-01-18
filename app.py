@@ -16,6 +16,9 @@ engine = create_engine("sqlite:///Resources/hawaii.sqlite")
 Base = automap_base()
 # reflect the tables
 Base.prepare(engine, reflect=True)
+#save reference to tables
+Measurement = Base.classes.measurement
+Station = Base.classes.station
 
 session = Session(engine)
 
@@ -36,7 +39,7 @@ def Homepage():
         f"/api/v1.0/precipitation<br/>"
         f"/api/v1.0/stations<br/>"
         f"/api.v1.0/tobs<br/>"
-        f"/api.v1.0/<start> and /api/v1.0/<start>/<end>"
+        f"/api/v1.0/<start>/<end><br/>"
     )
 
 
@@ -70,6 +73,14 @@ def tobs():
 
     return jsonify(str(tobs_12))
 
+@app.route("/api/v1.0/<start>/<end>")
+def startDateEndDate(start,end):
+    multi_day_temp_results = session.query(func.min(Measurement.tobs), 
+    func.avg(Measurement.tobs), 
+    func.max(Measurement.tobs)).filter(Measurement.date >= start).filter(Measurement.date <= end).all()
+    
+    return jsonify(multi_day_temp_results)
+   
 
 if __name__ == '__main__':
     app.run(debug=True)
